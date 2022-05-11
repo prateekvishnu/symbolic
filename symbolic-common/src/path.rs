@@ -81,6 +81,77 @@ fn is_windows_path<P: AsRef<[u8]>>(path: P) -> bool {
     is_absolute_windows_path(path) || path.contains(&b'\\')
 }
 
+/// Joins paths of various platforms by appending the second onto the first.
+///
+/// This attempts to detect Windows or Unix paths and joins with the correct directory separator.
+/// Also, trailing directory separators are detected in the base string and empty paths are handled
+/// correctly.
+///
+/// # Examples
+///
+/// Join a relative UNIX path:
+///
+/// ```
+/// let mut base = String::from("/a/b");
+/// symbolic_common::join_path_buf(&mut base, "c/d");
+/// assert_eq!(&base, "/a/b/c/d");
+/// ```
+///
+/// Join a Windows drive letter path path:
+///
+/// ```
+/// let mut base = String::from("C:\\a");
+/// symbolic_common::join_path_buf(&mut base, "b\\c");
+/// assert_eq!(&base, "C:\\a\\b\\c");
+/// ```
+///
+/// If the right-hand side is an absolute path, it replaces the left-hand side:
+///
+/// ```
+/// let mut base = String::from("/a/b");
+/// symbolic_common::join_path_buf(&mut base, "/c/d");
+/// assert_eq!(&base, "/c/d");
+/// ```
+pub fn join_path_buf(base: &mut String, other: &str) {
+    // special case for things like <stdin> or others.
+    if other.starts_with('<') && other.ends_with('>') {
+        base.clear();
+        base.push_str(other);
+        return;
+    }
+
+    // absolute paths
+    if base.is_empty() || is_absolute_windows_path(other) || is_absolute_unix_path(other) {
+        base.clear();
+        base.push_str(other);
+        return;
+    }
+
+    // other weird cases
+    if other.is_empty() {
+        return;
+    }
+
+    // C:\test + \bar -> C:\bar
+    if is_semi_absolute_windows_path(other) {
+        if is_absolute_windows_path(&base) {
+            base.truncate(2);
+        } else {
+            base.clear();
+        }
+        base.push_str(other);
+        return;
+    }
+
+    // Always trim by both separators, since as soon as the path is Windows, slashes also count as
+    // valid path separators. However, use the main separator for joining.
+    let is_windows = is_windows_path(&base) || is_windows_path(other);
+    let len = base.trim_end_matches(is_path_separator).len();
+    base.truncate(len);
+    base.push(if is_windows { '\\' } else { '/' });
+    base.push_str(other.trim_start_matches(is_path_separator))
+}
+
 /// Joins paths of various platforms.
 ///
 /// This attempts to detect Windows or Unix paths and joins with the correct directory separator.
@@ -107,39 +178,9 @@ fn is_windows_path<P: AsRef<[u8]>>(path: P) -> bool {
 /// assert_eq!(symbolic_common::join_path("/a/b", "/c/d"), "/c/d");
 /// ```
 pub fn join_path(base: &str, other: &str) -> String {
-    // special case for things like <stdin> or others.
-    if other.starts_with('<') && other.ends_with('>') {
-        return other.into();
-    }
-
-    // absolute paths
-    if base.is_empty() || is_absolute_windows_path(other) || is_absolute_unix_path(other) {
-        return other.into();
-    }
-
-    // other weird cases
-    if other.is_empty() {
-        return base.into();
-    }
-
-    // C:\test + \bar -> C:\bar
-    if is_semi_absolute_windows_path(other) {
-        if is_absolute_windows_path(base) {
-            return format!("{}{}", &base[..2], other);
-        } else {
-            return other.into();
-        }
-    }
-
-    // Always trim by both separators, since as soon as the path is Windows, slashes also count as
-    // valid path separators. However, use the main separator for joining.
-    let is_windows = is_windows_path(base) || is_windows_path(other);
-    format!(
-        "{}{}{}",
-        base.trim_end_matches(is_path_separator),
-        if is_windows { '\\' } else { '/' },
-        other.trim_start_matches(is_path_separator)
-    )
+    let mut base = base.into();
+    join_path_buf(&mut base, other);
+    base
 }
 
 fn pop_path(path: &mut String) -> bool {
@@ -151,6 +192,77 @@ fn pop_path(path: &mut String) -> bool {
         true
     } else {
         false
+    }
+}
+
+/// Simplifies a path by stripping redundant components, using the provided buffer to save the cleaned path.
+///
+/// This removes redundant `../` or `./` path components. However, this function does not operate on
+/// the file system. Since it does not resolve symlinks, this is a potentially lossy operation.
+///
+/// # Examples
+///
+/// Remove `./` components:
+///
+/// ```
+/// let mut buf = String::new();
+/// symbolic_common::clean_path_buf(&mut buf, "/a/./b");
+/// assert_eq!(&buf, "/a/b");
+/// ```
+///
+/// Remove path components followed by `../`:
+///
+/// ```
+/// let mut buf = String::new();
+/// symbolic_common::clean_path_buf(&mut buf, "/a/b/../c");
+/// assert_eq!(&buf, "/a/c");
+/// ```
+///
+/// Note that when the path is relative, the parent dir components may exceed the top-level:
+///
+/// ```
+/// let mut buf = String::new();
+/// symbolic_common::clean_path_buf(&mut buf, "/foo/../../b");
+/// assert_eq!(&buf, "../b");
+/// ```
+pub fn clean_path_buf(buf: &mut String, path: &str) {
+    // TODO: This function has a number of problems (see broken tests):
+    //  - It does not collapse consequtive directory separators
+    //  - Parent-directory directives may leave an absolute path
+    //  - A path is converted to relative when the parent directory hits top-level
+
+    let main_separator = if is_windows_path(path) { '\\' } else { '/' };
+
+    let mut needs_separator = false;
+    let mut is_past_root = false;
+
+    for segment in path.split_terminator(is_path_separator) {
+        if segment == "." {
+            continue;
+        } else if segment == ".." {
+            if !is_past_root && pop_path(buf) {
+                if buf.is_empty() {
+                    needs_separator = false;
+                }
+            } else {
+                if !is_past_root {
+                    needs_separator = false;
+                    is_past_root = true;
+                }
+                if needs_separator {
+                    buf.push(main_separator);
+                }
+                buf.push_str("..");
+                needs_separator = true;
+            }
+            continue;
+        }
+        if needs_separator {
+            buf.push(main_separator);
+        } else {
+            needs_separator = true;
+        }
+        buf.push_str(segment);
     }
 }
 
@@ -179,49 +291,12 @@ fn pop_path(path: &mut String) -> bool {
 /// assert_eq!(symbolic_common::clean_path("/foo/../../b"), "../b");
 /// ```
 pub fn clean_path(path: &str) -> Cow<'_, str> {
-    // TODO: This function has a number of problems (see broken tests):
-    //  - It does not collapse consequtive directory separators
-    //  - Parent-directory directives may leave an absolute path
-    //  - A path is converted to relative when the parent directory hits top-level
-
-    let mut rv = String::with_capacity(path.len());
-    let main_separator = if is_windows_path(path) { '\\' } else { '/' };
-
-    let mut needs_separator = false;
-    let mut is_past_root = false;
-
-    for segment in path.split_terminator(is_path_separator) {
-        if segment == "." {
-            continue;
-        } else if segment == ".." {
-            if !is_past_root && pop_path(&mut rv) {
-                if rv.is_empty() {
-                    needs_separator = false;
-                }
-            } else {
-                if !is_past_root {
-                    needs_separator = false;
-                    is_past_root = true;
-                }
-                if needs_separator {
-                    rv.push(main_separator);
-                }
-                rv.push_str("..");
-                needs_separator = true;
-            }
-            continue;
-        }
-        if needs_separator {
-            rv.push(main_separator);
-        } else {
-            needs_separator = true;
-        }
-        rv.push_str(segment);
-    }
+    let mut buf = String::new();
+    clean_path_buf(&mut buf, path);
 
     // For now, always return an owned string.
     // This can be optimized later.
-    Cow::Owned(rv)
+    Cow::Owned(buf)
 }
 
 /// Splits off the last component of a path given as bytes.

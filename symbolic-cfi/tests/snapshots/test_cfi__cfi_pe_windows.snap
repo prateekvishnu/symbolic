@@ -1,0 +1,48 @@
+---
+source: symbolic-minidump/tests/test_cfi.rs
+assertion_line: 105
+expression: cfi
+
+---
+STACK CFI INIT 1010 55 .cfa: $rsp 80 + $rbx: .cfa 16 - ^ $rsi: .cfa 24 - ^ $rdi: .cfa 32 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 10b0 43 .cfa: $rsp 48 + $rdi: .cfa 16 - ^ $rbx: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1120 2d .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1150 18 .cfa: $rsp 64 + .ra: .cfa 8 - ^
+STACK CFI INIT 1170 a .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1190 21 .cfa: $rsp 8 + .ra: .cfa 8 - ^
+STACK CFI INIT 11bc 3c .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 11f8 2b .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1224 b7 .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 12dc 10 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 12ec 19 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1308 17c .cfa: $rsp 64 + $rdi: .cfa 16 - ^ $rbx: .cfa 0 - ^ $rsi: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1484 12 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1498 34 .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 14cc d1 .cfa: $rsp 64 + .ra: .cfa 8 - ^
+STACK CFI INIT 15a0 71 .cfa: $rsp 96 + $rbx: .cfa 16 - ^ $rsi: .cfa 24 - ^ $rdi: .cfa 32 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 161c 3f .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 167c 3f .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 16dc 35 .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1728 42 .cfa: $rsp 48 + $rdi: .cfa 16 - ^ $rbx: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 176c 20 .cfa: $rsp 80 + .ra: .cfa 8 - ^
+STACK CFI INIT 178c 20 .cfa: $rsp 80 + .ra: .cfa 8 - ^
+STACK CFI INIT 17ac 39 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 17e8 49 .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1834 d8 .cfa: $rsp 80 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 190c 99 .cfa: $rsp 32 + .ra: .cfa 8 - ^
+STACK CFI INIT 19a8 24 .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 19cc 2b .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 19f8 4f .cfa: $rsp 48 + $rbx: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1a48 17 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1a60 ac .cfa: $rsp 48 + $rbp: .cfa 16 - ^ $rbx: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1b40 1b .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1b80 14a .cfa: $rsp 1488 + $rbp: .cfa 16 - ^ $rbx: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1cd4 52 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1d38 38 .cfa: $rsp 48 + .ra: .cfa 8 - ^
+STACK CFI INIT 1d70 3c .cfa: $rsp 48 + $rdi: .cfa 16 - ^ $rbx: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1dac 3c .cfa: $rsp 48 + $rdi: .cfa 16 - ^ $rbx: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 1de8 1b9 .cfa: $rsp 48 + $rsi: .cfa 16 - ^ $rdi: .cfa 24 - ^ $r14: .cfa 32 - ^ $rbx: .cfa 0 - ^ $rbp: .cfa 0 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 2090 2 .cfa: $rsp 8 + .ra: .cfa 8 - ^
+STACK CFI INIT 20ac 1e .cfa: $rsp 48 + $rbp: .cfa 16 - ^ .ra: .cfa 8 - ^
+STACK CFI INIT 20ca 18 .cfa: $rsp 16 + $rbp: .cfa 16 - ^ .ra: .cfa 8 - ^
+

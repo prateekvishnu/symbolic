@@ -13,10 +13,11 @@ use symbolic_common::{Arch, AsSelf, CodeId, DebugId, Uuid};
 
 use crate::base::*;
 use crate::dwarf::{Dwarf, DwarfDebugSession, DwarfError, DwarfSection, Endian};
-use crate::shared::{MonoArchive, MonoArchiveObjects, Parse};
+pub(crate) use mono_archive::{MonoArchive, MonoArchiveObjects};
 
 mod bcsymbolmap;
 pub mod compact;
+mod mono_archive;
 
 pub use bcsymbolmap::*;
 pub use compact::*;
@@ -804,7 +805,6 @@ impl<'slf, 'd: 'slf> AsSelf<'slf> for MachArchive<'d> {
 mod tests {
     use super::*;
 
-    #[allow(deprecated)]
     #[test]
     fn test_bcsymbolmap() {
         let object_data =

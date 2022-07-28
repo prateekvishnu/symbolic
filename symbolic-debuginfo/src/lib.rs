@@ -46,7 +46,6 @@ mod base;
     feature = "wasm"
 ))]
 mod object;
-mod shared;
 
 #[cfg(feature = "breakpad")]
 pub mod breakpad;
@@ -54,6 +53,10 @@ pub mod breakpad;
 pub mod dwarf;
 #[cfg(feature = "elf")]
 pub mod elf;
+#[cfg(any(feature = "dwarf", feature = "breakpad"))]
+pub mod function_builder;
+#[cfg(feature = "ms")]
+pub(crate) mod function_stack;
 #[cfg(feature = "macho")]
 pub mod macho;
 #[cfg(feature = "ms")]
